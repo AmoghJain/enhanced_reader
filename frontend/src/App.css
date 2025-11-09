@@ -2,57 +2,80 @@
  * =================================================================
  * Main Stylesheet: App.css
  * =================================================================
+ * This file contains all the styling rules for our 'App.js' component.
+ * =================================================================
  */
 
+/* Main application container */
 .App {
+  /* Center-aligns all text inside the App */
   text-align: center;
 }
 
+/* The dark header bar at the top */
 .App-header {
-  background-color: #282c34;
-  padding: 20px;
-  color: white;
+  background-color: #282c34; /* Dark grey/blue background */
+  padding: 20px;            /* 20px of space inside the header */
+  color: white;             /* White text */
 }
 
+/* * This is the container for the PDF and its controls.
+ * We use 'flexbox' to manage the layout.
+ */
 .pdf-container {
-  margin-top: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  margin-top: 20px;       /* Adds 20px of space above the PDF */
+  display: flex;          /* Use the flexbox layout model */
+  flex-direction: column; /* Stack children vertically (PDF above controls) */
+  align-items: center;  /* Center the children horizontally */
 }
 
-/* This styles the canvas where the PDF page is rendered */
+/* * This is a special class selector. 'react-pdf' applies
+ * this class name to the <canvas> element that it draws the
+ * PDF page onto.
+ * We target it to add a border and shadow, making it
+ * look like a real document.
+ */
 .react-pdf__Page__canvas {
-  border: 1px solid #ddd;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #ddd;              /* Light grey border */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle drop shadow */
 }
 
+/* The container for the "Previous", "Next", and "Page X of Y" text */
 .page-controls {
-  margin-top: 10px;
+  margin-top: 10px; /* Space between the PDF and the controls */
 }
 
+/* Styling for the control buttons */
 .page-controls button {
-  background-color: #007bff;
-  color: white;
-  border: none;
-  padding: 8px 12px;
-  margin: 0 5px;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+  background-color: #007bff;  /* A standard blue */
+  color: white;               /* White text */
+  border: none;               /* Remove the default button border */
+  padding: 8px 12px;          /* Space inside the button (top/bottom, left/right) */
+  margin: 0 5px;              /* Space *outside* the button (left/right) */
+  cursor: pointer;            /* Show a "hand" cursor on hover */
+  border-radius: 4px;         /* Give the buttons slightly rounded corners */
+  transition: background-color 0.2s; /* Animate the color change on hover */
 }
 
+/* * This is a "pseudo-class" selector.
+ * It applies when the button is being hovered by the mouse
+ * AND is *not* in the 'disabled' state.
+ */
 .page-controls button:hover:not(:disabled) {
-  background-color: #0056b3;
+  background-color: #0056b3; /* A darker blue for the hover effect */
 }
 
+/* * This pseudo-class applies when the button's 'disabled'
+ * attribute is set to 'true'.
+ */
 .page-controls button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+  background-color: #ccc;  /* Grey out the button */
+  cursor: not-allowed;     /* Show the "not-allowed" (circle-slash) cursor */
 }
 
+/* Styling for the "Page X of Y" text */
 .page-controls span {
-  margin: 0 10px;
-  font-weight: bold;
-  vertical-align: middle;
+  margin: 0 10px;           /* Space on the left and right */
+  font-weight: bold;        /* Make the text bold */
+  vertical-align: middle;   /* Helps align the text vertically with the buttons */
 }
