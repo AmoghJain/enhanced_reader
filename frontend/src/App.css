@@ -2,80 +2,170 @@
  * =================================================================
  * Main Stylesheet: App.css
  * =================================================================
- * This file contains all the styling rules for our 'App.js' component.
+ * [NEW] Updated with a 2-column flexbox layout for thumbnails.
  * =================================================================
  */
 
-/* Main application container */
+/* * [CHANGED] Make the App a full-height flex column.
+ * This ensures the header is at the top and the main content
+ * fills the rest of the screen.
+ */
 .App {
-  /* Center-aligns all text inside the App */
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Fill the entire viewport height */
+  overflow: hidden; /* Prevent full-page scrolling */
 }
 
-/* The dark header bar at the top */
+/* * [CHANGED] Make the header a fixed part of the layout.
+ * 'flex-shrink: 0' prevents it from shrinking.
+ */
 .App-header {
-  background-color: #282c34; /* Dark grey/blue background */
-  padding: 20px;            /* 20px of space inside the header */
-  color: white;             /* White text */
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+  flex-shrink: 0;
+  /* [NEW] Set explicit min-height for layout calculations */
+  min-height: 60px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* * This is the container for the PDF and its controls.
- * We use 'flexbox' to manage the layout.
+/* * [NEW] This is the main content area below the header.
+ * It's a flex *row* that fills the remaining space.
  */
-.pdf-container {
-  margin-top: 20px;       /* Adds 20px of space above the PDF */
-  display: flex;          /* Use the flexbox layout model */
-  flex-direction: column; /* Stack children vertically (PDF above controls) */
-  align-items: center;  /* Center the children horizontally */
+.App-main {
+  display: flex;
+  flex-direction: row; /* Columns side-by-side */
+  flex-grow: 1; /* Takes up all remaining vertical space */
+  overflow: hidden; /* Prevents its children's scrollbars from affecting it */
 }
 
-/* * This is a special class selector. 'react-pdf' applies
- * this class name to the <canvas> element that it draws the
- * PDF page onto.
- * We target it to add a border and shadow, making it
- * look like a real document.
+/* * [NEW] Styles for the left-hand thumbnail sidebar.
  */
+.thumbnail-sidebar {
+  width: 150px; /* Fixed width for the sidebar */
+  background-color: #f0f0f0; /* Light grey background */
+  overflow-y: auto; /* [CRITICAL] Makes the sidebar scrollable */
+  padding: 10px;
+  border-right: 1px solid #ccc;
+  flex-shrink: 0; /* Don't let the sidebar shrink */
+}
+
+/* * [NEW] Styles for each individual thumbnail item.
+ */
+.thumbnail-item {
+  margin-bottom: 10px;
+  cursor: pointer;
+  border: 3px solid transparent; /* Transparent border for spacing */
+  transition: border-color 0.2s;
+  padding: 5px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* [NEW] Add a number below the thumbnail */
+.thumbnail-page-number {
+  font-size: 12px;
+  font-weight: bold;
+  margin-top: 4px;
+  display: block;
+}
+
+/* [NEW] Highlight the active thumbnail */
+.thumbnail-item.active {
+  border-color: #007bff; /* Blue border for active page */
+}
+
+/* [NEW] Simple hover effect for thumbnails */
+.thumbnail-item:hover:not(.active) {
+  border-color: #aaa; /* Grey border on hover */
+}
+
+/* * [CHANGED] This class is now for the *right-hand column*.
+ * It will fill the remaining space and scroll independently.
+ */
+.pdf-viewer-container {
+  flex-grow: 1; /* Takes all remaining horizontal space */
+  overflow-y: auto; /* [CRITICAL] Makes the main viewer scrollable */
+  padding: 20px;
+  background-color: #fafafa;
+}
+
+/* [NEW] A wrapper to center the main document page */
+.pdf-document-wrapper {
+  margin-top: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+/* This is the PDF page itself, unchanged */
 .react-pdf__Page__canvas {
-  border: 1px solid #ddd;              /* Light grey border */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Subtle drop shadow */
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* The container for the "Previous", "Next", and "Page X of Y" text */
+/* * [NEW] Styles for the zoom controls
+ */
+.zoom-controls {
+  margin-bottom: 15px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+}
+
+.zoom-controls button {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  margin: 0 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.zoom-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.zoom-controls span {
+  font-weight: bold;
+  font-size: 1.1em;
+  min-width: 60px;
+  display: inline-block;
+}
+
+/* Page controls (Previous/Next), unchanged */
 .page-controls {
-  margin-top: 10px; /* Space between the PDF and the controls */
+  margin-top: 10px;
 }
 
-/* Styling for the control buttons */
 .page-controls button {
-  background-color: #007bff;  /* A standard blue */
-  color: white;               /* White text */
-  border: none;               /* Remove the default button border */
-  padding: 8px 12px;          /* Space inside the button (top/bottom, left/right) */
-  margin: 0 5px;              /* Space *outside* the button (left/right) */
-  cursor: pointer;            /* Show a "hand" cursor on hover */
-  border-radius: 4px;         /* Give the buttons slightly rounded corners */
-  transition: background-color 0.2s; /* Animate the color change on hover */
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  margin: 0 5px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
 }
 
-/* * This is a "pseudo-class" selector.
- * It applies when the button is being hovered by the mouse
- * AND is *not* in the 'disabled' state.
- */
 .page-controls button:hover:not(:disabled) {
-  background-color: #0056b3; /* A darker blue for the hover effect */
+  background-color: #0056b3;
 }
 
-/* * This pseudo-class applies when the button's 'disabled'
- * attribute is set to 'true'.
- */
 .page-controls button:disabled {
-  background-color: #ccc;  /* Grey out the button */
-  cursor: not-allowed;     /* Show the "not-allowed" (circle-slash) cursor */
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 
-/* Styling for the "Page X of Y" text */
 .page-controls span {
-  margin: 0 10px;           /* Space on the left and right */
-  font-weight: bold;        /* Make the text bold */
-  vertical-align: middle;   /* Helps align the text vertically with the buttons */
+  margin: 0 10px;
+  font-weight: bold;
+  vertical-align: middle;
 }

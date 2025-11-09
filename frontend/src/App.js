@@ -1,52 +1,32 @@
 /*
  * =================================================================
- * Main React Component: App.js
+ * Main ReactComponent: App.js
  * =================================================================
- * This file is the heart of our frontend. It defines the 'App'
- * component which is responsible for:
- * 1. Configuring the 'react-pdf' library.
- * 2. Managing state (total pages, current page).
- * 3. Fetching the PDF from our FastAPI backend.
- * 4. Rendering the PDF and page controls.
+ * This file contains all logic for our PDF viewer.
+ *
+ * [NEW] This version now includes:
+ * 1. A two-column layout.
+ * 2. A scrollable thumbnail sidebar on the left.
+ * 3. Click-to-navigate functionality on the thumbnails.
+ * 4. An "active" state to highlight the current thumbnail.
  * =================================================================
  */
 
 // ---
 // Section 1: Imports
 // ---
-// Import 'React' and the 'useState' Hook.
-// 'useState' allows our component to have "state" (memory).
 import React, { useState } from 'react';
-
-// Import the main components from 'react-pdf'.
 import { Document, Page, pdfjs } from 'react-pdf';
-
-// ⚠️ CSS Imports for 'react-pdf'
-// These are required for the text layer and annotation layer
-// (like links or selectable text) to render correctly.
-// We are using the paths for v7+ of react-pdf.
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
-
-// Import our custom stylesheet.
 import './App.css';
 
 // ---
 // Section 2: PDF.js Worker Configuration
 // ---
-// ⚠️ This is the most critical and complex part of setup.
-// 'pdf.js' (the library 'react-pdf' uses) processes PDFs
-// using a "worker" file. This runs in a separate thread
-// so it doesn't freeze the browser.
-//
-// We are telling it to load the worker file that we *manually*
-// copied into our 'public' folder. This is the most
-// reliable method and avoids all the version-mismatch
-// errors we were seeing.
-//
-// This file path *must* match the file we copied in the terminal
-// (e.g., pdf.worker.min.mjs).
+// This path points to the worker file in our 'public' folder.
 pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+
 
 /**
  * =================================================================
@@ -58,64 +38,67 @@ function App() {
   // ---
   // Section 3: Component State
   // ---
-  // 'useState' initializes a piece of state. It returns
-  // an array: [currentValue, functionToUpdateIt].
-
-  // This state will hold the total number of pages in the PDF.
-  // We start it at 'null' because we don't know it yet.
   const [numPages, setNumPages] = useState(null);
-
-  // This state holds the page number the user is currently viewing.
-  // We start it at '1'.
   const [pageNumber, setPageNumber] = useState(1);
+  
+  // [NEW] State for zoom level (re-added from previous step)
+  const [scale, setScale] = useState(1.0);
 
   // ---
   // Section 4: Event Handlers & Functions
   // ---
 
   /**
-   * This function is a callback. 'react-pdf' will call it
-   * automatically when the <Document> component successfully
-   * loads the PDF file.
-   * @param {object} pdf - An object containing PDF metadata.
-   * @param {number} pdf.numPages - The total page count.
+   * Callback for when any PDF Document successfully loads.
+   * We use this for both the main viewer and the thumbnail bar.
    */
   function onDocumentLoadSuccess({ numPages }) {
-    // Update our 'numPages' state with the new value.
     setNumPages(numPages);
-    // Reset the page number to 1 (in case a new PDF is loaded).
-    setPageNumber(1); 
+    // We only reset the page number if it's the *first* load
+    // This prevents jumping to page 1 when thumbnails load.
+    if (pageNumber === 1) {
+      setPageNumber(1);
+    }
   }
 
   /**
-   * This function is called when the "Previous" button is clicked.
+   * Goes to the previous page, stopping at 1.
    */
   function goToPrevPage() {
-    // We use a functional update to get the previous page number.
-    // 'Math.max(1, ...)' ensures we can't go to page 0 or negative.
     setPageNumber(prevPageNumber => Math.max(1, prevPageNumber - 1));
   }
 
   /**
-   * This function is called when the "Next" button is clicked.
+   * Goes to the next page, stopping at the last page.
    */
   function goToNextPage() {
-    // 'Math.min(numPages, ...)' ensures we can't go past the last page.
     setPageNumber(prevPageNumber => Math.min(numPages, prevPageNumber + 1));
+  }
+
+  // [NEW] Function to navigate to a specific page (from thumbnails)
+  function goToPage(page) {
+    setPageNumber(page);
+  }
+
+  // [NEW] Zoom In function
+  function zoomIn() {
+    setScale(prevScale => Math.min(prevScale + 0.2, 3.0)); // Cap at 300%
+  }
+
+  // [NEW] Zoom Out function
+  function zoomOut() {
+    setScale(prevScale => Math.max(prevScale - 0.2, 0.5)); // Floor at 50%
   }
 
   // ---
   // Section 5: Constants
   // ---
-  
-  // The URL of our Python backend endpoint.
-  // This *must* match the URL defined in 'main.py'.
   const pdfUrl = "http://127.0.0.1:8000/get-pdf";
 
   // ---
   // Section 6: JSX Render
   // ---
-  // This is the HTML-like syntax that React renders to the page.
+  // [CHANGED] The layout is now a flexbox container.
   return (
     <div className="App">
       
@@ -124,75 +107,105 @@ function App() {
         <h1>React PDF Viewer</h1>
       </header>
       
-      {/* The main container for the PDF and its controls */}
-      <div className="pdf-container">
+      {/* [NEW] Main content area, split into two columns */}
+      <div className="App-main">
         
-        {/*
-         * The <Document> component from 'react-pdf'.
-         * It is responsible for fetching and loading the PDF.
-         */}
-        <Document
-          // 'file': The URL of the PDF to load.
-          file={pdfUrl}
-          // 'onLoadSuccess': The function to call when it's done loading.
-          onLoadSuccess={onDocumentLoadSuccess}
-          // 'onLoadError': A good practice for debugging.
-          onLoadError={(error) => console.error("Error loading PDF:", error.message)}
-          // 'loading': What to display while the PDF is being loaded.
-          loading="Loading PDF..."
-        >
-          {/*
-           * The <Page> component renders one page.
-           * It must be *inside* the <Document> component.
-           */}
-          <Page 
-            // 'pageNumber': Which page to show (from our state).
-            pageNumber={pageNumber} 
-            // 'renderTextLayer': This prop makes text selectable
-            // (and requires the CSS file we imported).
-            renderTextLayer={true}
-          />
-        </Document>
+        {/* [NEW] Column 1: Thumbnail Sidebar */}
+        <div className="thumbnail-sidebar">
+          {/* This Document component is *just* for rendering thumbnails.
+            We only render it *after* numPages is known, to prevent errors.
+          */}
+          {numPages && (
+            <Document
+              file={pdfUrl}
+              // We can reuse the same success callback
+              onLoadSuccess={onDocumentLoadSuccess}
+            >
+              {/* Create an array from 1 to numPages and map over it
+                to create a thumbnail for each page.
+              */}
+              {Array.from(new Array(numPages), (el, index) => {
+                const page = index + 1;
+                // [NEW] Check if this thumbnail is the active one
+                const isActive = page === pageNumber;
+
+                return (
+                  <div
+                    key={`thumb-page-${page}`}
+                    // [NEW] Apply 'active' class conditionally
+                    className={`thumbnail-item ${isActive ? 'active' : ''}`}
+                    // [NEW] Click handler to jump to this page
+                    onClick={() => goToPage(page)}
+                  >
+                    <Page
+                      pageNumber={page}
+                      width={100} // Fixed width for all thumbnails
+                      renderTextLayer={false} // No text layer for thumbs
+                      renderAnnotationLayer={false} // No annotation layer
+                    />
+                    <span className="thumbnail-page-number">
+                      {page}
+                    </span>
+                  </div>
+                );
+              })}
+            </Document>
+          )}
+        </div>
         
-        {/*
-         * Page Controls Section
-         * This is a conditional render: 'numPages && (...)'
-         * It means "Only render this <div> if 'numPages' is not null"
-         * (i.e., only after the PDF has loaded).
-         */}
-        {numPages && (
-          <div className="page-controls">
-            
-            {/* Previous Page Button */}
-            <button
-              // 'disabled': This HTML attribute is set to 'true'
-              // if we are on page 1, graying out the button.
-              disabled={pageNumber <= 1}
-              onClick={goToPrevPage}
-            >
-              Previous
-            </button>
-            
-            {/* The page counter text */}
-            <span>
-              Page {pageNumber} of {numPages}
-            </span>
-            
-            {/* Next Page Button */}
-            <button
-              // 'disabled': This is set to 'true' if we are
-              // on the last page.
-              disabled={pageNumber >= numPages}
-              onClick={goToNextPage}
-            >
-              Next
-            </button>
+        {/* [NEW] Column 2: Main PDF Viewer Container */}
+        <div className="pdf-viewer-container">
+
+          {/* [NEW] Zoom Controls */}
+          <div className="zoom-controls">
+            <button onClick={zoomOut} disabled={scale <= 0.5}>Zoom Out (-)</button>
+            <span>{(scale * 100).toFixed(0)}%</span>
+            <button onClick={zoomIn} disabled={scale >= 3.0}>Zoom In (+)</button>
           </div>
-        )}
-      </div>
+
+          {/* [CHANGED] This container now just holds the main document
+            and its page controls.
+          */}
+          <div className="pdf-document-wrapper">
+            <Document
+              file={pdfUrl}
+              onLoadSuccess={onDocumentLoadSuccess}
+              onLoadError={(error) => console.error("Error loading PDF:", error.message)}
+              loading="Loading PDF..."
+            >
+              <Page 
+                pageNumber={pageNumber} 
+                renderTextLayer={true}
+                // [NEW] Pass the scale state to the Page component
+                scale={scale}
+              />
+            </Document>
+          </div>
+          
+          {/* Page Controls (Previous/Next) */}
+          {numPages && (
+            <div className="page-controls">
+              <button
+                disabled={pageNumber <= 1}
+                onClick={goToPrevPage}
+              >
+                Previous
+              </button>
+              <span>
+                Page {pageNumber} of {numPages}
+              </span>
+              <button
+                disabled={pageNumber >= numPages}
+                onClick={goToNextPage}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div> {/* End pdf-viewer-container */}
+      </div> {/* End App-main */}
     </div>
   );
 }
 
-// Export the 'App' component so 'index.js' can render it.
 export default App;
