@@ -4,3 +4,4 @@ frontend/public
 frontend/.gitignore
 frontend/package*
 frontend/README.md
+data/
