@@ -1,0 +1,58 @@
+/*
+ * =================================================================
+ * Main Stylesheet: App.css
+ * =================================================================
+ */
+
+.App {
+  text-align: center;
+}
+
+.App-header {
+  background-color: #282c34;
+  padding: 20px;
+  color: white;
+}
+
+.pdf-container {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* This styles the canvas where the PDF page is rendered */
+.react-pdf__Page__canvas {
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.page-controls {
+  margin-top: 10px;
+}
+
+.page-controls button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  margin: 0 5px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.page-controls button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.page-controls button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.page-controls span {
+  margin: 0 10px;
+  font-weight: bold;
+  vertical-align: middle;
+}
